@@ -1,8 +1,10 @@
 streamlit
-matplotlib
+streamlit-webrtc
 numpy
+matplotlib
 scipy
-librosa
+pydub
 soundfile
-fpdf
-noisereduce
+sounddevice
+librosa
+pandas
