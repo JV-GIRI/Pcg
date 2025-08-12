@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  attempts     Attempt[]
+  progress     Progress[]
+}
+
+model Chapter {
+  id         String       @id @default(cuid())
+  subject    String
+  title      String
+  lessons    Lesson[]
+  questions  Question[]
+  progress   Progress[]
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  chapter     Chapter  @relation(fields: [chapterId], references: [id])
+  chapterId   String
+  title       String
+  contentUrl  String?
+  createdAt   DateTime @default(now())
+}
+
+model Question {
+  id             String           @id @default(cuid())
+  chapter        Chapter          @relation(fields: [chapterId], references: [id])
+  chapterId      String
+  text           String
+  difficulty     Int              @default(1)
+  source         String?
+  createdAt      DateTime         @default(now())
+  options        QuestionOption[]
+  testQuestions  TestQuestion[]
+  attemptAnswers AttemptAnswer[]
+}
+
+model QuestionOption {
+  id         String    @id @default(cuid())
+  question   Question  @relation(fields: [questionId], references: [id])
+  questionId String
+  idx        Int
+  text       String
+  isCorrect  Boolean   @default(false)
+}
+
+model Test {
+  id         String          @id @default(cuid())
+  title      String
+  type       String
+  createdAt  DateTime        @default(now())
+  questions  TestQuestion[]
+  attempts   Attempt[]
+}
+
+model TestQuestion {
+  id          String    @id @default(cuid())
+  test        Test      @relation(fields: [testId], references: [id])
+  testId      String
+  question    Question  @relation(fields: [questionId], references: [id])
+  questionId  String
+  order       Int
+}
+
+model Attempt {
+  id           String          @id @default(cuid())
+  user         User            @relation(fields: [userId], references: [id])
+  userId       String
+  test         Test            @relation(fields: [testId], references: [id])
+  testId       String
+  startedAt    DateTime        @default(now())
+  completedAt  DateTime?
+  score        Int             @default(0)
+  answers      AttemptAnswer[]
+}
+
+model AttemptAnswer {
+  id           String    @id @default(cuid())
+  attempt      Attempt   @relation(fields: [attemptId], references: [id])
+  attemptId    String
+  question     Question  @relation(fields: [questionId], references: [id])
+  questionId   String
+  selectedIdx  Int
+  isCorrect    Boolean
+}
+
+model Progress {
+  id            String    @id @default(cuid())
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  chapter       Chapter   @relation(fields: [chapterId], references: [id])
+  chapterId     String
+  proficiency   Int       @default(0)
+  lastStudiedAt DateTime?
+}
